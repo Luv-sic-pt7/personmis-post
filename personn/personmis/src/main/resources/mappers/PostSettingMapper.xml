@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ch.personmis.repository.PostSettingMapper">
+
+    <!-- 查询部门的岗位设置情况 -->
+    <select id="getPostSettingsByDepartment" resultType="PostSetting" parameterType="Integer">
+        SELECT
+        p.pname AS postName,  <!-- 岗位名称 -->
+        GROUP_CONCAT(s.sname) AS employeeNames,  <!-- 员工姓名（逗号分隔） -->
+        COUNT(s.id) AS employeeCount  <!-- 岗位下员工数量 -->
+        FROM
+        post p
+        LEFT JOIN staff s ON p.id = s.post_id  <!-- 关联岗位与员工 -->
+        WHERE
+        s.depart_id = #{departmentId}  <!-- 只查询特定部门 -->
+        GROUP BY
+        p.id  <!-- 按岗位分组 -->
+    </select>
+
+</mapper>

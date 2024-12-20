@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ch.personmis.repository.WorkReportRepository">
+    <insert id="addWorkReport" parameterType="com.ch.personmis.entity.WorkReport">
+        INSERT INTO work_report (staff_id, report_date, task_type, task_description, task_duration, task_difficulty, tasks_completed, work_details, approval_status, create_time)
+        VALUES (#{staffId}, #{reportDate}, #{taskType}, #{taskDescription}, #{taskDuration}, #{taskDifficulty}, #{tasksCompleted}, #{workDetails}, #{approvalStatus}, #{createTime})
+    </insert>
+</mapper>

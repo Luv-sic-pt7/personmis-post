@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ch.personmis.repository.EmployeeRepository">
+
+    <select id="selectEmployeeById" resultType="com.ch.personmis.entity.Employee">
+        SELECT id,sname, skills
+        FROM staff
+        WHERE id = #{id}
+    </select>
+    <update id="updateEmployeeSkills">
+        UPDATE staff
+        SET skills = #{skills}
+        WHERE id = #{id}
+    </update>
+    <select id="searchEmployeesBySkills" resultType="com.ch.personmis.entity.Employee">
+        SELECT id, sname, skills
+        FROM staff
+        WHERE skills LIKE CONCAT('%', #{skills}, '%')
+    </select>
+
+</mapper>

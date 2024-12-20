@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ch.personmis.repository.PostRepository">
+	<!-- 查询所有岗位 -->
+	<select id="selectPost"  resultType="Post" parameterType="PostByCon">
+		select * from post
+		<if test="act == 'byPage'" >
+			limit #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<!-- 添加岗位 -->
+	<insert id="addPost"  parameterType="Post">
+		insert into post (id,pname,ptype,organization, departmentId, responsibilities, skills) values (null, #{pname}, #{ptype}, #{organization}, #{departmentId}, #{responsibilities}, #{skills})
+	</insert>
+	<!-- 条件查询 -->
+	<select id="selectPostByCon" resultType="Post"  parameterType="PostByCon">
+		select *
+		from post where 1=1
+		<if test="pname != null and pname != ''">
+			and pname like concat('%',#{pname},'%')
+		</if>
+		<if test="ptype != null and ptype != ''">
+			and ptype = #{ptype}
+		</if>
+		<if test="departmentId != null and departmentId != ''">
+			and departmentId = #{departmentId}
+		</if>
+		<if test="act == 'byPage'" >
+			limit #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<!-- 查询一个岗位 -->
+	<select id="selectAPost" resultType="Post" parameterType="Integer">
+		select * from  post where id = #{id}
+	</select>
+	<!-- 修改岗位 -->
+	<update id="updatePost" parameterType="Post">
+		update post
+		<set>
+			<if test="pname != null">
+				pname = #{pname},
+			</if>
+			<if test="ptype != null">
+				ptype = #{ptype},
+			</if>
+			<if test="organization != null">
+				organization = #{organization},
+			</if>
+			<if test="departmentId != null">
+				departmentId = #{departmentId},
+			</if>
+			<if test="responsibilities != null">
+				responsibilities = #{responsibilities},
+			</if>
+			<if test="skills != null">
+				skills = #{skills},
+			</if>
+
+		</set>
+		where id = #{id}
+	</update>
+	<!--查询关联岗位-->
+	<select id="selectAssociatePost" resultType="map" parameterType="Integer">
+		SELECT DISTINCT s.id, t.id  from staff s, transfer t WHERE
+			s.post_id = #{id} or t.beforepost_id = #{id} or t.afterpost_id = #{id}
+	</select>
+	<!--删除职位-->
+	<delete id="deletePost" parameterType="Integer">
+		delete from post where id = #{id}
+	</delete>
+	<select id="findDepartmentById" resultType="map">
+		SELECT DISTINCT d.id, d.dname, d.dtype, d.dtel, d.dfax, d.description, d.establishmentdate
+		FROM department d
+				 JOIN post p ON d.id = p.departmentId
+		WHERE p.departmentId = #{departmentId}
+	</select>
+
+	<select id="findPostDetailsAcrossDepartments" resultType="map">
+		SELECT
+		p.departmentId,
+		d.dname AS departmentName, <!-- 部门名称 -->
+		p.pname,
+		p.ptype,
+		p.organization,
+		p.responsibilities,
+		p.skills,
+		COUNT(s.id) AS currentCount
+		FROM
+		post p
+		LEFT JOIN staff s ON p.id = s.post_id
+		LEFT JOIN department d ON p.departmentId = d.id <!-- 关联 department 表 -->
+		WHERE
+		p.pname = #{pname}
+		GROUP BY
+		p.departmentId, d.dname, p.id
+	</select>
+	<!-- 查询岗位总数 -->
+	<select id="getPostCount" resultType="int">
+		SELECT COUNT(*) FROM post
+	</select>
+
+	<!-- 查询岗位工作量 -->
+	<select id="getWorkloadByPost" resultType="map">
+		SELECT MONTH(wr.report_date) as month, SUM(wr.tasks_completed) as totalTasks
+		FROM work_report wr
+			JOIN staff s ON wr.staff_id = s.id
+		WHERE s.post_id = #{postId}
+		GROUP BY MONTH(wr.report_date)
+	</select>
+
+	<select id="getAverageSalaryByPost" resultType="map">
+		SELECT s.post_id as postId, p.pname as postName, AVG(s.salary) as averageSalary
+		FROM staff s
+				 JOIN post p ON s.post_id = p.id
+		GROUP BY s.post_id, p.pname
+		ORDER BY averageSalary DESC
+	</select>
+</mapper>

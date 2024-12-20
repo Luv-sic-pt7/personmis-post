@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ch.personmis.repository.DepartRepository">
+	<!-- 查询所有部门 -->
+	<select id="selectDepart"  resultType="Depart" parameterType="DepartByCon">
+		select id,dname,dtype,dtel,dfax,description,supdepartment,date_format(establishmentdate,'%Y-%m-%d') as establishmentdate1  from department
+		<if test="act == 'byPage'" >
+			limit #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<!-- 条件查询部门 -->
+	<select id="selectDepartmentsByCon"  resultType="Depart" parameterType="DepartByCon">
+		select
+		id,dname,dtype,dtel,dfax,description,supdepartment,date_format(establishmentdate,'%Y-%m-%d') as establishmentdate1
+		from department
+		where 1=1
+		<if test="dname !=null and dname!=''">
+			and dname like concat('%',#{dname},'%')
+		</if>
+		<if test="dtype !=null and dtype!=''">
+			and dtype = #{dtype}
+		</if>
+		<if test="act == 'byPage'" >
+			limit #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<!-- 添加部门 -->
+	<insert id="addDepart"  parameterType="Depart">
+		insert into department (id,dname,dtype,dtel,dfax,description,supdepartment,establishmentdate)
+		values (null, #{dname}, #{dtype}, #{dtel}, #{dfax}, #{description}, #{supdepartment}, now())
+	</insert>
+	<!-- 查询一个部门 -->
+	<select id="getDepartmentDetail" resultType="Depart" parameterType="Integer">
+		select d1.id, d1.dname, d1.dtype, d1.dtel, d1.dfax, d1.description,
+		date_format(d1.establishmentdate,'%Y-%m-%d') as establishmentdate1,
+		d1.supdepartment,
+		<if test="id != 1">
+			d2.dname as supdepartment1
+		</if>
+		<if test="id == 1">
+			'顶级部门' as supdepartment1
+		</if>
+		from department d1
+		<if test="id != 1">
+			LEFT JOIN department d2 ON d1.supdepartment = d2.id
+		</if>
+		where d1.id = #{id}
+	</select>
+
+	<!-- 修改部门 -->
+	<update id="updateDepartment" parameterType="Depart">
+		update department
+		<set>
+			<if test="dname != null">
+				dname = #{dname},
+			</if>
+			<if test="dtype != null">
+				dtype = #{dtype},
+			</if>
+			<if test="dtel != null">
+				dtel = #{dtel},
+			</if>
+			<if test="dfax != null">
+				dfax = #{dfax},
+			</if>
+			<if test="description != null">
+				description = #{description},
+			</if>
+			<if test="supdepartment != null">
+				supdepartment = #{supdepartment}
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+	<!--查询关联部门-->
+	<select id="selectAssociateDepart" resultType="map" parameterType="Integer">
+		SELECT DISTINCT d.id, s.id
+		FROM department d, staff s WHERE d.supdepartment = #{id} or s.depart_id  = #{id}
+	</select>
+	<!--删除部门-->
+	<delete id="deleteDepart" parameterType="Integer">
+		delete from department where id = #{id}
+	</delete>
+
+</mapper>

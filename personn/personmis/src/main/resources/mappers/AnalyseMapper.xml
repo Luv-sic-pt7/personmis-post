@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ch.personmis.repository.AnalyseRepository">
+    <select id="getAverageTaskDuration" resultType="BigDecimal">
+        SELECT AVG(task_duration) FROM work_report
+    </select>
+    <select id="getTotalMonthlySalary" resultType="BigDecimal">
+        SELECT SUM(salary) / 1000 FROM staff
+    </select>
+    <select id="getAgeStructureByPostName" resultType="map">
+        SELECT
+        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, birthday, CURDATE()) &lt; 20 THEN 1 ELSE 0 END) AS `under_20`,
+        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, birthday, CURDATE()) BETWEEN 20 AND 30 THEN 1 ELSE 0 END) AS `20_30`,
+        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, birthday, CURDATE()) BETWEEN 30 AND 40 THEN 1 ELSE 0 END) AS `30_40`,
+        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, birthday, CURDATE()) &gt; 40 THEN 1 ELSE 0 END) AS `over_40`
+        FROM staff
+        WHERE post_id = (SELECT id FROM post WHERE pname = #{postName})
+    </select>
+    <select id="getEducationDistributionByPostName" resultType="map">
+        SELECT
+            education,
+            COUNT(*) AS count
+        FROM staff
+        WHERE post_id = (SELECT id FROM post WHERE pname = #{postName})
+        GROUP BY education
+    </select>
+</mapper>
